@@ -98,6 +98,7 @@ _custom_logger_compatible_callbacks_literal = Literal[
     "otel",
     "datadog",
     "datadog_llm_observability",
+    "prompt_guard_observability",
     "galileo",
     "braintrust",
     "arize",

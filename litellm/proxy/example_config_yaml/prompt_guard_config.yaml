@@ -1,0 +1,51 @@
+model_list:
+  - model_name: gpt-3.5-turbo
+    litellm_params:
+      model: gpt-3.5-turbo
+      api_key: ${OPENAI_API_KEY}
+
+# Guardrails configuration
+guardrails:
+  - guardrail_name: "prompt-injection-guard"
+    litellm_params:
+      guardrail: prompt_guard
+      mode: pre_call
+      default_on: true
+      block_requests: true
+      injection_patterns:
+        - "ignore previous instructions"
+        - "ignore all previous instructions"
+        - "disregard previous instructions"
+        - "forget your instructions"
+        - "you are now"
+      custom_patterns:
+        - "system prompt:"
+        - "new system prompt:"
+      max_prompt_length: 10000
+      sensitive_terms:
+        - "password"
+        - "credit card"
+        - "social security"
+      log_only: false  # Set to true to only log issues without blocking
+
+# Callbacks for observability
+litellm_settings:
+  callbacks: ["prompt_guard_observability"]
+  prompt_guard_observability:
+    log_to_file: true
+    log_file_path: "/tmp/prompt_guard_logs.jsonl"
+    include_prompt_text: false  # Set to true to include full prompt text in logs (may contain sensitive data)
+
+# Optional: Configure additional security settings
+general_settings:
+  # Set a default API key for all requests
+  default_api_key: "sk-my-default-api-key"
+  
+  # Enable key validation
+  validate_api_key: true
+  
+  # Set a maximum number of parallel requests
+  max_parallel_requests: 100
+  
+  # Set a maximum tokens per minute rate limit
+  max_tokens_per_min: 10000
