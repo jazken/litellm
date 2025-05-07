@@ -96,6 +96,23 @@ def initialize_hide_secrets(litellm_params, guardrail):
     litellm.logging_callback_manager.add_litellm_callback(_secret_detection_object)
 
 
+def initialize_prompt_guard(litellm_params, guardrail):
+    from litellm.proxy.guardrails.guardrail_hooks.prompt_guard import PromptGuardCallback
+
+    _prompt_guard_callback = PromptGuardCallback(
+        guardrail_name=guardrail["guardrail_name"],
+        event_hook=litellm_params["mode"],
+        default_on=litellm_params["default_on"],
+        block_requests=litellm_params.get("block_requests", True),
+        injection_patterns=litellm_params.get("injection_patterns"),
+        custom_patterns=litellm_params.get("custom_patterns"),
+        max_prompt_length=litellm_params.get("max_prompt_length"),
+        sensitive_terms=litellm_params.get("sensitive_terms"),
+        log_only=litellm_params.get("log_only", False),
+    )
+    litellm.logging_callback_manager.add_litellm_callback(_prompt_guard_callback)
+
+
 def initialize_guardrails_ai(litellm_params, guardrail):
     from litellm.proxy.guardrails.guardrail_hooks.guardrails_ai import GuardrailsAI
 

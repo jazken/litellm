@@ -104,6 +104,7 @@ from ..integrations.braintrust_logging import BraintrustLogger
 from ..integrations.custom_prompt_management import CustomPromptManagement
 from ..integrations.datadog.datadog import DataDogLogger
 from ..integrations.datadog.datadog_llm_obs import DataDogLLMObsLogger
+from ..integrations.prompt_guard_observability import PromptGuardObservability
 from ..integrations.dynamodb import DyanmoDBLogger
 from ..integrations.galileo import GalileoObserve
 from ..integrations.gcs_bucket.gcs_bucket import GCSBucketLogger
@@ -2821,6 +2822,19 @@ def _init_custom_logger_compatible_class(  # noqa: PLR0915
             _datadog_llm_obs_logger = DataDogLLMObsLogger()
             _in_memory_loggers.append(_datadog_llm_obs_logger)
             return _datadog_llm_obs_logger  # type: ignore
+        elif logging_integration == "prompt_guard_observability":
+            from litellm.integrations.prompt_guard_observability import PromptGuardObservability
+            _prompt_guard_obs_logger = PromptGuardObservability(
+                log_to_file=kwargs.get("log_to_file", False),
+                log_file_path=kwargs.get("log_file_path"),
+                log_to_cloud=kwargs.get("log_to_cloud", False),
+                cloud_service=kwargs.get("cloud_service"),
+                cloud_api_key=kwargs.get("cloud_api_key"),
+                cloud_endpoint=kwargs.get("cloud_endpoint"),
+                include_prompt_text=kwargs.get("include_prompt_text", False),
+            )
+            _in_memory_loggers.append(_prompt_guard_obs_logger)
+            return _prompt_guard_obs_logger  # type: ignore
         elif logging_integration == "gcs_bucket":
             for callback in _in_memory_loggers:
                 if isinstance(callback, GCSBucketLogger):
@@ -3109,6 +3123,11 @@ def get_custom_logger_compatible_class(  # noqa: PLR0915
         elif logging_integration == "datadog_llm_observability":
             for callback in _in_memory_loggers:
                 if isinstance(callback, DataDogLLMObsLogger):
+                    return callback
+        elif logging_integration == "prompt_guard_observability":
+            from litellm.integrations.prompt_guard_observability import PromptGuardObservability
+            for callback in _in_memory_loggers:
+                if isinstance(callback, PromptGuardObservability):
                     return callback
         elif logging_integration == "gcs_bucket":
             for callback in _in_memory_loggers:
